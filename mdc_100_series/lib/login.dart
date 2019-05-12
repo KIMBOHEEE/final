@@ -1,9 +1,11 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'home.dart';
+
 import 'db.dart' as db;
+import 'home.dart';
 
 final FirebaseAuth _auth = FirebaseAuth.instance;
 final GoogleSignIn _googleSignIn = GoogleSignIn();
@@ -21,23 +23,22 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Builder(builder: (BuildContext context) {
-          return ListView(
-            scrollDirection: Axis.vertical,
-            children: <Widget>[
-              SizedBox(height:200),
-              Icon(
-                Icons.favorite,
-                size: 50,
-                color: Colors.red,
-              ),
-              SizedBox(height:40),
-              _GoogleSignInSection(),
-              _AnonymouslySignInSection(),
-            ],
-          );
-        }
-      ),
+      body: Builder(builder: (BuildContext context) {
+        return ListView(
+          scrollDirection: Axis.vertical,
+          children: <Widget>[
+            SizedBox(height: 200),
+            Icon(
+              Icons.favorite,
+              size: 50,
+              color: Colors.red,
+            ),
+            SizedBox(height: 40),
+            _GoogleSignInSection(),
+            _AnonymouslySignInSection(),
+          ],
+        );
+      }),
     );
   }
 }
@@ -54,16 +55,14 @@ class _GoogleSignInSectionState extends State<_GoogleSignInSection> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-
         Container(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           alignment: Alignment.center,
           child: RaisedButton(
             onPressed: () async {
-              _signInWithGoogle().then((FirebaseUser user){
-                  Navigator.of(context).push(MaterialPageRoute(
-                    builder: (BuildContext context) => HomePage()
-                  ));
+              _signInWithGoogle().then((FirebaseUser user) {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (BuildContext context) => HomePage()));
               });
             },
             child: const Text('GOOGLE'),
@@ -148,9 +147,7 @@ class _AnonymouslySignInSectionState extends State<_AnonymouslySignInSection> {
       assert(user.providerData.length == 1);
       assert(user.providerData[0].providerId == 'firebase');
       assert(user.providerData[0].uid != null);
-      assert(user.providerData[0].displayName == null);
       assert(user.providerData[0].photoUrl == null);
-      assert(user.providerData[0].email == null);
     }
 
     final FirebaseUser currentUser = await _auth.currentUser();
