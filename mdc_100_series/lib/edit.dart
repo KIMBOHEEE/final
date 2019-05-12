@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
@@ -19,6 +22,8 @@ String accountStatus = '******';
 FirebaseUser mCurrentUser;
 FirebaseAuth _auth;
 List like = [];
+String imageUrl;
+
 var _nameController = TextEditingController();
 var _priceController = TextEditingController();
 var _infoController = TextEditingController();
@@ -33,6 +38,8 @@ class _EditPageState extends State<EditPage> {
     mCurrentUser = await FirebaseAuth.instance.currentUser();
     print(mCurrentUser.uid.toString());
   }
+
+  @override
   void initState(){
      _nameController = TextEditingController(text: record.name);
      _priceController = TextEditingController(text: record.prices.toString());
@@ -42,7 +49,6 @@ class _EditPageState extends State<EditPage> {
 
   @override
   Widget build(BuildContext context) {
-    initState();
     _getCurrentUser();
     return Scaffold(
       key: _scaffoldKey,
@@ -62,7 +68,8 @@ class _EditPageState extends State<EditPage> {
             onPressed: (){
               DateTime now = DateTime.now();
               String formattedDate = DateFormat('yyyy-MM-dd – kk:mm').format(now);
-              record.reference.updateData({'name': _nameController,
+              record.reference.updateData({
+                'name': _nameController.text,
                 'price':int.parse(_priceController.text),
                 'info':_infoController.text,
                 'category':_categoryController.text,
@@ -98,11 +105,23 @@ class _EditPageState extends State<EditPage> {
         _image = image;
       });
       print(_image);
-      Firestore.instance.collection('product')
-          .document(_nameController.text)
-          .setData({
-             'image': _image,
-           });
+      final String rand =
+          "${new Random().nextInt(10000)}${DateTime.now().millisecond}";
+
+      final StorageReference firebaseStorageRef =
+      FirebaseStorage.instance.ref().child('product').child('myimage.jpg');
+      final StorageUploadTask task =
+      firebaseStorageRef.putFile(_image);
+
+      await (await task.onComplete)
+          .ref
+          .getDownloadURL()
+          .then((dynamic url) {
+        setState(() {
+          imageUrl= url;
+          _image = null;
+        });}
+      );
     }
     final record = db.Record.fromSnapshot(data);
 

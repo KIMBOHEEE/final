@@ -8,6 +8,10 @@ import 'package:intl/intl.dart';
 import 'package:image_picker/image_picker.dart';
 
 
+List<String> categorylist = ['All'];
+List<Record> first= [];
+List<Record> second =[];
+
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -25,6 +29,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  String dropdownValue = 'All';
+  String dropdownValue2 = 'ASC';
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -56,22 +64,88 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      body: _buildBody(context),
+      body: Column(
+        children: <Widget>[
+          Row(
+            children: <Widget>[
+              SizedBox(width: 50.0),
+               DropdownButton<String>(
+                  value: dropdownValue,
+                  onChanged: (String newValue) {
+                    setState(() {
+                      dropdownValue = newValue;
+                    });
+                  },
+                  items: categorylist
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+               SizedBox(width: 12.0),
+               DropdownButton<String>(
+                  value: dropdownValue2,
+                  onChanged: (String newValue) {
+                    setState(() {
+                      dropdownValue2 = newValue;
+                    });
+                  },
+                  items: <String>['ASC', 'DSC']
+                      .map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+            ],
+          ),
+          Expanded(child: _buildBody(context)),
+        ],
+      ),
     );
   }
+
 
   Widget _buildBody(BuildContext context) {
     return StreamBuilder<QuerySnapshot>(
       stream: Firestore.instance.collection('product').snapshots(),
       builder: (context, snapshot) {
         if (!snapshot.hasData) return LinearProgressIndicator();
-
-        return _buildList(context, snapshot.data.documents);
+        first = [];
+        categorylist = ['All'];
+        second =[];
+        snapshot.data.documents.forEach((DocumentSnapshot ds) {
+          first.add(Record.fromSnapshot(ds));
+          if(!categorylist.contains(Record.fromSnapshot(ds).category)) {
+            categorylist.add(Record.fromSnapshot(ds).category);
+            print('catgory : ' + Record.fromSnapshot(ds).category);
+          }
+        });
+        second = [];
+        if(dropdownValue == 'All'){
+          second = first;
+        }else {
+          for (int i = 0; i < first.length; i++) {
+            if (first[i].category == dropdownValue) {
+              second.add(first[i]);
+            }
+          }
+        }
+        if(dropdownValue2 == 'ASC'){
+          second.sort((a, b) => a.prices.compareTo(b.prices));
+        }else{
+          second.sort((b, a) => a.prices.compareTo(b.prices));
+        }
+        return _buildList(context);
       },
     );
   }
 
-  Widget _buildList(BuildContext context, List<DocumentSnapshot> snapshot) {
+  Widget _buildList(BuildContext context) {
+
     return OrientationBuilder(
       builder:(context,orientation){
         return GridView.count(
@@ -79,14 +153,13 @@ class _HomePageState extends State<HomePage> {
           crossAxisCount: orientation == Orientation.portrait ? 2 : 3,
           childAspectRatio: 8.0/9.0,
           children:
-          snapshot.map((data) => _buildListItem(context, data)).toList(),
+          second.map((data) => _buildListItem(context, data)).toList(),
         );
      }
     );
   }
 
-  Widget _buildListItem(BuildContext context, DocumentSnapshot data) {
-    final record = Record.fromSnapshot(data);
+  Widget _buildListItem(BuildContext context, Record record) {
 
     return Card(
       clipBehavior: Clip.antiAlias,

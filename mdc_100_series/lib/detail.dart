@@ -50,7 +50,6 @@ class _DetailPageState extends State<DetailPage> {
     );
   }
 
-
   void showNoBar(List like){
     _scaffoldKey.currentState.showSnackBar(SnackBar(
         content:Text("You can only do it oncce!"),
@@ -59,7 +58,7 @@ class _DetailPageState extends State<DetailPage> {
             onPressed: () {
               like.remove(mCurrentUser.uid.toString());
               record.reference.updateData({'likeUser': like });
-              record.reference.updateData({'like': record.likeUser.length});
+              record.reference.updateData({'like': like.length});
             })
     )
     );
@@ -94,6 +93,7 @@ class _DetailPageState extends State<DetailPage> {
               icon: Icon(Icons.delete, color: Colors.white),
               onPressed: () {
                 isOwner() ? record.reference.delete() : print("you are not owner");
+                Navigator.of(context).pushNamed('/home');
               }
           ),
         ],
@@ -148,13 +148,13 @@ class _DetailPageState extends State<DetailPage> {
                 icon : Icon(Icons.thumb_up,  color: Colors.red),
                 onPressed: (){
                   List like =[];
+                  for(int i = 0; i < record.likeUser.length; i++){
+                    like.add(record.likeUser[i]);
+                  }
 
-                  if(record.likeUser.length != 0 && record.likeUser.contains(mCurrentUser.uid.toString())){
+                  if(record.likeUser.contains(mCurrentUser.uid.toString())){
                     showNoBar(like);
                   }else{
-                    for(int i = 0; i < record.likeUser.length; i++){
-                      like.add(record.likeUser[i]);
-                    }
                     like.add(mCurrentUser.uid.toString());
                     for(int i=0; i<like.length; i++){
                       print(like[i]+'\n');

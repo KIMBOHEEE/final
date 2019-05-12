@@ -17,6 +17,7 @@ class MyPagePage extends StatefulWidget {
 class _MyPagePageState extends State<MyPagePage> {
   _getCurrentUser () async {
     mCurrentUser = await FirebaseAuth.instance.currentUser();
+
     if(mCurrentUser.isAnonymous) {
       email = 'anonymous';
       imageurl = 'https://screenshotlayer.com/images/assets/placeholder.png';
@@ -26,12 +27,19 @@ class _MyPagePageState extends State<MyPagePage> {
       imageurl = mCurrentUser.photoUrl;
     }
 
+
+
   }
 
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+    super.initState();
     _getCurrentUser();
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return Scaffold(
       appBar: AppBar(
